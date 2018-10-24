@@ -47,7 +47,7 @@ class TestCASLogin(unittest.TestCase):
     @browsing
     def test_valid_ticket_returns_jwt_token(self, browser):
         with patch('ftw.casauth.restapi.caslogin.validate_ticket') as mock:
-            mock.return_value = TEST_USER_ID
+            mock.return_value = TEST_USER_ID, {}
             browser.open(
                 self.portal.absolute_url() + '/@caslogin',
                 data=json.dumps({
@@ -63,7 +63,7 @@ class TestCASLogin(unittest.TestCase):
     @browsing
     def test_accepts_service_url_from_body(self, browser):
         with patch('ftw.casauth.restapi.caslogin.validate_ticket') as mock:
-            mock.return_value = TEST_USER_ID
+            mock.return_value = TEST_USER_ID, {}
             browser.open(
                 self.portal.absolute_url() + '/@caslogin',
                 data=json.dumps({

@@ -25,6 +25,12 @@
           <td><input type="text" name="cas_server_url"/></td>
         </tr>
         <tr>
+          <td class="form-label">
+	    Set Member Properties from CAS Attributes?
+	  </td>
+          <td><input type="checkbox" name="set_props_from_attrs:bool" /></td>
+        </tr>
+        <tr>
           <td colspan="2">
             <div class="form-element">
               <input type="submit" value="Add"/>

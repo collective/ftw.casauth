@@ -48,14 +48,12 @@ class CASLogin(Service):
                 type='Login failed',
                 message='CAS/JWT authentication plugin not installed.'))
 
-        userid = validate_ticket(
+        userid, payload = validate_ticket(
             data['ticket'],
             cas_plugin.cas_server_url,
             service,
         )
 
-        user = uf.getUserById(userid)
-        payload = {'fullname': user.getProperty('fullname')}
         return {
             'token': jwt_plugin.create_token(userid, data=payload)
         }

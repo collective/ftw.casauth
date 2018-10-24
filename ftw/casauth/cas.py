@@ -72,7 +72,14 @@ def validate_ticket(ticket, cas_server_url, service_url):
         return False
     userid = userid[0].firstChild.data
 
-    return userid
+    attrs = {
+        child.localName: child.firstChild.data
+        for child in auth_success[0].getElementsByTagNameNS(
+            CAS_NS, 'attributes')[0].childNodes
+        if child.namespaceURI == CAS_NS
+    }
+
+    return userid, attrs
 
 
 def service_url(request):

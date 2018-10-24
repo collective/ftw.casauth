@@ -96,17 +96,36 @@ class TestCASAuthPlugin(unittest.TestCase):
 
     @patch('ftw.casauth.plugin.validate_ticket')
     def test_authenticate_credentials_succeeds_with_valid_credentials(self, mock_validate_ticket):
-        mock_validate_ticket.return_value = TEST_USER_ID
+        attrs = {
+            'longTermAuthenticationRequestTokenUsed': 'false',
+            'fullname': 'James Bond'}
+        mock_validate_ticket.return_value = TEST_USER_ID, attrs
         creds = {
             'extractor': self.plugin.getId(),
             'ticket': 'ST-001-abc',
             'service_url': 'http://127.0.0.1/'
         }
+
+        mtool = getToolByName(getSite(), 'portal_membership')
+        member = mtool.getMemberById(TEST_USER_ID)
+        self.assertNotEqual(
+            member.getProperty('fullname'), attrs['fullname'],
+            'Member property matches CAS attribute before login')
+
+        self.plugin.set_props_from_attrs = True
         self.plugin.REQUEST = self.request
         self.plugin.REQUEST.RESPONSE = self.request.response
         userid, login = self.plugin.authenticateCredentials(creds)
         self.assertEqual(TEST_USER_ID, userid)
         self.assertEqual(TEST_USER_ID, login)
+
+        member = mtool.getMemberById(TEST_USER_ID)
+        self.assertEqual(
+            member.getProperty('fullname'), attrs['fullname'],
+            'Wrong member property from CAS attributes')
+        self.assertFalse(
+            member.hasProperty('longTermAuthenticationRequestTokenUsed'),
+            'Member property set from unknown property')
 
     def test_authenticate_credentials_fails_with_wrong_extractor(self):
         creds = {
@@ -119,7 +138,7 @@ class TestCASAuthPlugin(unittest.TestCase):
 
     @patch('ftw.casauth.plugin.validate_ticket')
     def test_authenticate_credentials_fails_with_inexisting_user(self, mock_validate_ticket):
-        mock_validate_ticket.return_value = 'james'
+        mock_validate_ticket.return_value = 'james', {}
         creds = {
             'extractor': self.plugin.getId(),
             'ticket': 'ST-001-abc',
@@ -134,7 +153,7 @@ class TestCASAuthPlugin(unittest.TestCase):
     def test_sets_login_times_when_success(self, mock_validate_ticket):
         mtool = getToolByName(getSite(), 'portal_membership')
 
-        mock_validate_ticket.return_value = TEST_USER_ID
+        mock_validate_ticket.return_value = TEST_USER_ID, {}
         creds = {
             'extractor': self.plugin.getId(),
             'ticket': 'ST-001-abc',
@@ -151,7 +170,7 @@ class TestCASAuthPlugin(unittest.TestCase):
 
     @patch('ftw.casauth.plugin.validate_ticket')
     def test_expires_clipboard_when_success(self, mock_validate_ticket):
-        mock_validate_ticket.return_value = TEST_USER_ID
+        mock_validate_ticket.return_value = TEST_USER_ID, {}
         creds = {
             'extractor': self.plugin.getId(),
             'ticket': 'ST-001-abc',

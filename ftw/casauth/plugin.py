@@ -22,11 +22,14 @@ manage_addCASAuthenticationPlugin = PageTemplateFile(
     "www/addPlugin", globals(), __name__="manage_addCASAuthenticationPlugin")
 
 
-def addCASAuthenticationPlugin(self, id_, title=None, cas_server_url=None,
-                               REQUEST=None):
+def addCASAuthenticationPlugin(
+        self, id_, title=None,
+        cas_server_url=None, set_props_from_attrs=False,
+        REQUEST=None):
     """Add a CAS authentication plugin
     """
-    plugin = CASAuthenticationPlugin(id_, title, cas_server_url)
+    plugin = CASAuthenticationPlugin(
+        id_, title, cas_server_url, set_props_from_attrs)
     self._setObject(plugin.getId(), plugin)
 
     if REQUEST is not None:
@@ -58,12 +61,19 @@ class CASAuthenticationPlugin(BasePlugin):
     manage_config = PageTemplateFile('www/config', globals(),
                                      __name__='manage_config')
 
-    def __init__(self, id_, title=None, cas_server_url=None):
+    # Detaults for existing instances created before these were added
+    set_props_from_attrs = False
+
+    def __init__(
+            self, id_, title=None,
+            cas_server_url=None, set_props_from_attrs=False):
         self._setId(id_)
         self.title = title
         if cas_server_url:
             cas_server_url = cas_server_url.rstrip('/')
         self.cas_server_url = cas_server_url
+
+        self.set_props_from_attrs = set_props_from_attrs
 
     security.declarePrivate('challenge')
 
@@ -109,21 +119,22 @@ class CASAuthenticationPlugin(BasePlugin):
         if extractor != self.getId():
             return None
 
-        userid = validate_ticket(
+        validation_result = validate_ticket(
             credentials['ticket'],
             self.cas_server_url,
             credentials['service_url'],
         )
-        if not userid:
+        if not validation_result:
             return None
+        userid, attrs = validation_result
 
-        result = self.login_user(userid)
+        result = self.login_user(userid, attrs=attrs)
         if not result:
             return None
 
         return userid, userid
 
-    def login_user(self, userid):
+    def login_user(self, userid, attrs=None):
         pas = self._getPAS()
         info = pas._verifyUser(pas.plugins, user_id=userid)
         if info is None:
@@ -135,6 +146,9 @@ class CASAuthenticationPlugin(BasePlugin):
             return None
 
         first_login = self.set_login_times(member)
+
+        if self.set_props_from_attrs and attrs:
+            member.setMemberProperties(attrs)
 
         self.fire_login_events(first_login, member)
 
@@ -182,6 +196,9 @@ class CASAuthenticationPlugin(BasePlugin):
         response = REQUEST.response
 
         self.cas_server_url = REQUEST.form.get('cas_server_url', '').rstrip('/')
+        self.set_props_from_attrs = bool(REQUEST.form.get(
+            'set_props_from_attrs',
+            CASAuthenticationPlugin.set_props_from_attrs))
 
         response.redirect('%s/manage_config?manage_tabs_message=%s' %
                           (self.absolute_url(), 'Configuration+updated.'))

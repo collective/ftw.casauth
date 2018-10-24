@@ -17,6 +17,17 @@
                      tal:attributes="value context/cas_server_url"/></td>
         </tr>
         <tr>
+          <td>
+	    <div class="form-label">
+	      Set Member Properties from CAS Attributes?
+	    </div>
+          </td>
+          <td>
+	    <input type="checkbox" name="set_props_from_attrs:bool"
+                   tal:attributes="checked context/set_props_from_attrs" />
+	  </td>
+        </tr>
+        <tr>
           <td colspan="2">
             <div class="form-element">
               <input type="submit" value="Update"/>
