@@ -23,13 +23,14 @@ manage_addCASAuthenticationPlugin = PageTemplateFile(
 
 
 def addCASAuthenticationPlugin(
-        self, id_, title=None,
-        cas_server_url=None, set_props_from_attrs=False,
+        self, id_, title=None, cas_server_url=None,
+        set_props_from_attrs=False, add_unknown_users=False,
         REQUEST=None):
     """Add a CAS authentication plugin
     """
     plugin = CASAuthenticationPlugin(
-        id_, title, cas_server_url, set_props_from_attrs)
+        id_, title, cas_server_url,
+        set_props_from_attrs, add_unknown_users)
     self._setObject(plugin.getId(), plugin)
 
     if REQUEST is not None:
@@ -63,10 +64,11 @@ class CASAuthenticationPlugin(BasePlugin):
 
     # Detaults for existing instances created before these were added
     set_props_from_attrs = False
+    add_unknown_users = False
 
     def __init__(
-            self, id_, title=None,
-            cas_server_url=None, set_props_from_attrs=False):
+            self, id_, title=None, cas_server_url=None,
+            set_props_from_attrs=False, add_unknown_users=False):
         self._setId(id_)
         self.title = title
         if cas_server_url:
@@ -74,6 +76,7 @@ class CASAuthenticationPlugin(BasePlugin):
         self.cas_server_url = cas_server_url
 
         self.set_props_from_attrs = set_props_from_attrs
+        self.add_unknown_users = add_unknown_users
 
     security.declarePrivate('challenge')
 
@@ -138,7 +141,13 @@ class CASAuthenticationPlugin(BasePlugin):
         pas = self._getPAS()
         info = pas._verifyUser(pas.plugins, user_id=userid)
         if info is None:
-            return None
+            if self.add_unknown_users:
+                registration = getToolByName(getSite(), 'portal_registration')
+                pas._doAddUser(
+                    userid, registration.generatePassword(),
+                    roles=('Member',), domains='')
+            else:
+                return None
 
         mtool = getToolByName(getSite(), 'portal_membership')
         member = mtool.getMemberById(userid)
@@ -199,6 +208,9 @@ class CASAuthenticationPlugin(BasePlugin):
         self.set_props_from_attrs = bool(REQUEST.form.get(
             'set_props_from_attrs',
             CASAuthenticationPlugin.set_props_from_attrs))
+        self.add_unknown_users = bool(REQUEST.form.get(
+            'add_unknown_users',
+            CASAuthenticationPlugin.add_unknown_users))
 
         response.redirect('%s/manage_config?manage_tabs_message=%s' %
                           (self.absolute_url(), 'Configuration+updated.'))

@@ -31,6 +31,12 @@
           <td><input type="checkbox" name="set_props_from_attrs:bool" /></td>
         </tr>
         <tr>
+          <td class="form-label">
+	    Add Unknown Users?
+	  </td>
+          <td><input type="checkbox" name="add_unknown_users:bool" /></td>
+        </tr>
+        <tr>
           <td colspan="2">
             <div class="form-element">
               <input type="submit" value="Add"/>

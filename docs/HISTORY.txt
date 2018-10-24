@@ -4,6 +4,9 @@ Changelog
 1.2.1 (unreleased)
 ------------------
 
+- Optionally add portal members on first CAS login.
+  [rpatterson]
+
 - Optionally set member properties from CAS response attributes.
   [rpatterson]
 

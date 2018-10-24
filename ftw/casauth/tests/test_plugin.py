@@ -150,6 +150,31 @@ class TestCASAuthPlugin(unittest.TestCase):
         self.assertEqual(None, ret)
 
     @patch('ftw.casauth.plugin.validate_ticket')
+    def test_add_unknown_user(self, mock_validate_ticket):
+        mock_validate_ticket.return_value = 'james', {}
+        creds = {
+            'extractor': self.plugin.getId(),
+            'ticket': 'ST-001-abc',
+            'service_url': 'http://127.0.0.1/'
+        }
+
+        mtool = getToolByName(getSite(), 'portal_membership')
+        member = mtool.getMemberById('james')
+        self.assertIsNone(
+            member, 'Member exists before CAS login')
+
+        self.plugin.add_unknown_users = True
+        self.plugin.REQUEST = self.request
+        self.plugin.REQUEST.RESPONSE = self.request.response
+        userid, login = self.plugin.authenticateCredentials(creds)
+        self.assertEqual('james', userid)
+        self.assertEqual('james', login)
+
+        member = mtool.getMemberById(TEST_USER_ID)
+        self.assertTrue(
+            member, 'Member not created on CAS login')
+
+    @patch('ftw.casauth.plugin.validate_ticket')
     def test_sets_login_times_when_success(self, mock_validate_ticket):
         mtool = getToolByName(getSite(), 'portal_membership')
 

@@ -28,6 +28,17 @@
 	  </td>
         </tr>
         <tr>
+          <td>
+	    <div class="form-label">
+	      Add Unknown Users?
+	    </div>
+          </td>
+          <td>
+	    <input type="checkbox" name="add_unknown_users:bool"
+                   tal:attributes="checked context/add_unknown_users" />
+	  </td>
+        </tr>
+        <tr>
           <td colspan="2">
             <div class="form-element">
               <input type="submit" value="Update"/>
