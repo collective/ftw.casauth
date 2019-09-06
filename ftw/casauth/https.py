@@ -1,21 +1,29 @@
-"""SSL server certificate verification for `urllib2`.
+"""SSL server certificate verification for `urllib.request`.
 
 Python's built-in HTTPS support does not verify certificates.
 Thus we provide our own HTTPSHandler which *does* certificate validation.
 
 Example usage::
 
-    >>> opener = urllib2.build_opener(HTTPSHandler)
+    >>> opener = urllib.request.build_opener(HTTPSHandler)
     >>> opener.open('https://example.com/').read()
 
 """
-from backports.ssl_match_hostname import match_hostname, CertificateError
-import httplib
 import os
 import socket
 import ssl
 import sys
-import urllib2
+
+# BBB Python 2 compatibility
+from six.moves import urllib
+from six.moves import http_client
+try:
+    from ssl import match_hostname
+    from ssl import CertificateError
+except ImportError:
+    from backports.ssl_match_hostname import match_hostname
+    from backports.ssl_match_hostname import CertificateError
+
 
 CERT_FILE = os.path.join(os.path.dirname(__file__), 'cacert.pem')
 
@@ -65,10 +73,10 @@ if not hasattr(socket, 'create_connection'):  # for Python 2.4
     socket.create_connection = create_connection
 
 
-class HTTPSConnection(httplib.HTTPConnection):
+class HTTPSConnection(http_client.HTTPConnection):
     "This class allows communication via SSL."
 
-    default_port = httplib.HTTPS_PORT
+    default_port = http_client.HTTPS_PORT
 
     def connect(self):
         "Connect to a host on a given (SSL) port."
@@ -96,7 +104,7 @@ class HTTPSConnection(httplib.HTTPConnection):
             raise
 
 
-class HTTPSHandler(urllib2.HTTPSHandler):
+class HTTPSHandler(urllib.request.HTTPSHandler):
 
     def https_open(self, req):
             return self.do_open(HTTPSConnection, req)

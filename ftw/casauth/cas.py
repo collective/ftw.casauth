@@ -1,21 +1,16 @@
 from collections import OrderedDict
 from ftw.casauth.config import USE_CUSTOM_HTTPS_HANDLER
 from logging import getLogger
-from urllib import urlencode
-from urlparse import parse_qsl
-from urlparse import urlsplit
-from urlparse import urlunsplit
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
-import urllib
-import urllib2
+from six.moves import urllib
 
 
 if USE_CUSTOM_HTTPS_HANDLER:
     from ftw.casauth.https import HTTPSHandler
 else:
-    from urllib2 import HTTPSHandler
+    HTTPSHandler = urllib.request.HTTPSHandler
 
 CAS_NS = "http://www.yale.edu/tp/cas"
 
@@ -31,15 +26,15 @@ def validate_ticket(ticket, cas_server_url, service_url):
         ticket,
     )
 
-    opener = urllib2.build_opener(HTTPSHandler)
+    opener = urllib.request.build_opener(HTTPSHandler)
     try:
         resp = opener.open(validate_url)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         logger.warning("Ticket validation failed. Could not open url %s. "
                        "Staus code: %s, reason: %s" % (validate_url, e.code,
                                                        e.reason))
         return False
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
         logger.warning("Ticket validation failed. Could not open url %s. "
                        "Reason: %s" % (validate_url, e.reason))
         return False
@@ -94,10 +89,10 @@ def strip_ticket(url):
     """Drop the `ticket` query string parameter from a given URL,
     but preserve everything else.
     """
-    scheme, netloc, path, query, fragment = urlsplit(url)
+    scheme, netloc, path, query, fragment = urllib.parse.urlsplit(url)
     # Using OrderedDict and parse_qsl here to preserve order
-    qs_params = OrderedDict(parse_qsl(query))
+    qs_params = OrderedDict(urllib.parse.parse_qsl(query))
     qs_params.pop('ticket', None)
-    query = urlencode(qs_params)
-    new_url = urlunsplit((scheme, netloc, path, query, fragment))
+    query = urllib.parse.urlencode(qs_params)
+    new_url = urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
     return new_url

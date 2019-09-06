@@ -14,9 +14,10 @@ from Products.PluggableAuthService.interfaces.plugins import IExtractionPlugin
 from Products.PluggableAuthService.plugins.BasePlugin import BasePlugin
 from zope.component.hooks import getSite
 from zope.event import notify
-from zope.interface import implements
-import urllib
+from zope import interface
 
+# BBB Python 2 compatibility
+from six.moves import urllib
 
 manage_addCASAuthenticationPlugin = PageTemplateFile(
     "www/addPlugin", globals(), __name__="manage_addCASAuthenticationPlugin")
@@ -41,14 +42,13 @@ def addCASAuthenticationPlugin(
         )
 
 
+@interface.implementer(
+    IAuthenticationPlugin,
+    IChallengePlugin,
+    IExtractionPlugin)
 class CASAuthenticationPlugin(BasePlugin):
     """Plone PAS plugin for authentication against a CAS server.
     """
-    implements(
-        IAuthenticationPlugin,
-        IChallengePlugin,
-        IExtractionPlugin,
-    )
     meta_type = "CAS Authentication Plugin"
     security = ClassSecurityInfo()
 
@@ -88,9 +88,10 @@ class CASAuthenticationPlugin(BasePlugin):
         if not self.cas_server_url:
             return False
 
+        import pdb; pdb.set_trace()
         response.redirect('%s/login?service=%s' % (
             self.cas_server_url,
-            urllib.quote(service_url(request)),
+            urllib.parse.quote(service_url(request)),
         ), lock=True)
         return True
 

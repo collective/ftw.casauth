@@ -1,13 +1,17 @@
 from collections import OrderedDict
 from DateTime import DateTime
 from datetime import datetime
+
+# BBB Python 2 compatibility
+from six.moves import urllib
+
 from ftw.casauth.cas import service_url
 from ftw.casauth.testing import FTW_CASAUTH_INTEGRATION_TESTING
 from ftw.testing import freeze
 from mock import patch
 from plone.app.testing import TEST_USER_ID
 from Products.CMFCore.utils import getToolByName
-from urllib import urlencode
+
 from zope.component.hooks import getSite
 import unittest
 
@@ -89,7 +93,7 @@ class TestCASAuthPlugin(unittest.TestCase):
         params = OrderedDict(
             (('ticket', 'ST-001-abc'), ('param1', 'v1'), ('param2', 'v2')))
         self.request.form.update(params)
-        self.request.environ['QUERY_STRING'] = urlencode(params)
+        self.request.environ['QUERY_STRING'] = urllib.parse.urlencode(params)
         url = service_url(self.request)
 
         self.assertEqual('http://nohost?param1=v1&param2=v2', url)
