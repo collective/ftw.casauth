@@ -22,7 +22,7 @@ def validate_ticket(ticket, cas_server_url, service_url):
     """
     validate_url = '%s/serviceValidate?service=%s&ticket=%s' % (
         cas_server_url,
-        urllib.quote(service_url),
+        urllib.parse.quote(service_url),
         ticket,
     )
 
