@@ -88,7 +88,6 @@ class CASAuthenticationPlugin(BasePlugin):
         if not self.cas_server_url:
             return False
 
-        import pdb; pdb.set_trace()
         response.redirect('%s/login?service=%s' % (
             self.cas_server_url,
             urllib.parse.quote(service_url(request)),
