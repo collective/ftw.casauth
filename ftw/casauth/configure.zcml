@@ -7,6 +7,4 @@
 
   <five:registerPackage package="." initialize=".initialize" />
 
-  <include package=".restapi" zcml:condition="installed plone.restapi"/>
-
 </configure>

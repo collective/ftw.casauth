@@ -3,7 +3,7 @@
 Introduction
 ============
 
-This product provides a PAS plugin for authentication of users in Plone
+This product provides a PAS plugin for authentication of users in Zope
 against a CAS (Central Autentication Server).
 
 It currently supports CAS 2.0 and CAS 3.0 protocols.

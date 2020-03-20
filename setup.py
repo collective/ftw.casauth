@@ -5,8 +5,6 @@ import sys
 version = '1.2.1.dev0'
 
 tests_require = [
-    'plone.app.testing',
-    'plone.restapi',
     'mock',
     'ftw.testbrowser',
     'ftw.testing',
@@ -14,8 +12,6 @@ tests_require = [
 
 install_requires = [
     'six',
-    'Plone',
-    'setuptools',
 ]
 python_major_version = sys.version_info[0]
 python_minor_version = sys.version_info[1]
@@ -35,11 +31,7 @@ setup(
     long_description=(open('README.rst').read() + '\n' +
                       open(os.path.join('docs', 'HISTORY.txt')).read()),
     classifiers=[
-        'Framework :: Plone',
-        'Framework :: Plone :: 4.1',
-        'Framework :: Plone :: 4.2',
-        'Framework :: Plone :: 4.3',
-        'Framework :: Plone :: 5.1',
+        'Framework :: Zope',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
@@ -61,6 +53,6 @@ setup(
     entry_points="""
     # -*- Entry points: -*-
     [z3c.autoinclude.plugin]
-    target = plone
+    target = zope
     """,
 )

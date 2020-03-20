@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 from ftw.casauth.cas import service_url
 from ftw.casauth.cas import validate_ticket
-from plone.restapi.deserializer import json_body
-from plone.restapi.services import Service
-from Products.CMFCore.utils import getToolByName
+from ftw.casauth.restapi.prestapi import json_body, Service
 from Products.PluggableAuthService.interfaces.plugins import IAuthenticationPlugin  # noqa
 from zope.interface import alsoProvides
 
-import plone.protect.interfaces
+try:
+    import plone.protect.interfaces
+    plone_protect = True
+except ImportError:
+    plone_protect = False
 
 
 class CASLogin(Service):
-    """Handles login and returns a JSON web token (JWT).
-    """
+    """Handles login and returns a JSON web token (JWT)."""
     def reply(self):
         data = json_body(self.request)
         if 'ticket' not in data:
@@ -26,12 +27,17 @@ class CASLogin(Service):
         else:
             service = service_url(self.request)[:-10],  # Strip `/@caslogin`
 
-        # Disable CSRF protection
-        if 'IDisableCSRFProtection' in dir(plone.protect.interfaces):
-            alsoProvides(self.request,
-                         plone.protect.interfaces.IDisableCSRFProtection)
+        if (
+            plone_protect
+            and 'IDisableCSRFProtection' in dir(plone.protect.interfaces)
+        ):
+            # Disable CSRF protection
+            alsoProvides(
+                self.request,
+                plone.protect.interfaces.IDisableCSRFProtection
+            )
 
-        uf = getToolByName(self.context, 'acl_users')
+        uf = getattr(self.context.getPhysicalRoot(), 'acl_users')
         plugins = uf._getOb('plugins')
         authenticators = plugins.listPlugins(IAuthenticationPlugin)
         cas_plugin = None
